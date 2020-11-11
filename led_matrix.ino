@@ -102,8 +102,8 @@ void handleDisplay() {
 
     case 1:
       // flash baseHours
-      if ((millisecondsSinceModeWasLastChanged / 250) % 4 > 2) {
-        // show for 750 ms and hide for 250 ms
+      if ((millisecondsSinceModeWasLastChanged / 250) % 2 > 0) {
+        // show for 250 ms and hide for 250 ms
         setHoursOnScreen(0);
 
       } else {
@@ -119,8 +119,8 @@ void handleDisplay() {
       // display baseHours & flash baseMinutes
       setHoursOnScreen(baseHours);
 
-      if ((millisecondsSinceModeWasLastChanged / 250) % 4 > 2) {
-        // show for 750 ms and hide for 250 ms
+      if ((millisecondsSinceModeWasLastChanged / 250) % 2 > 0) {
+        // show for 250 ms and hide for 250 ms
         setMinutesOnScreen(0);
 
       } else {
@@ -136,8 +136,8 @@ void handleDisplay() {
       setHoursOnScreen(baseHours);
       setMinutesOnScreen(baseMinutes);
 
-      if ((millisecondsSinceModeWasLastChanged / 250) % 4 > 2) {
-        // show for 750 ms and hide for 250 ms
+      if ((millisecondsSinceModeWasLastChanged / 250) % 2 > 0) {
+        // show for 250 ms and hide for 250 ms
         setSecondsOnScreen(0);
 
       } else {
