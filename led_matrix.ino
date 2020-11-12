@@ -23,6 +23,7 @@ const int timeSetButton = 19;
 // if true, clock will be 24 hour
 // if false, clock will be 12 hour
 boolean is24Hour = true;
+// TODO add switch to control this
 
 
 
@@ -151,15 +152,10 @@ void handleDisplay() {
 }
 
 void setCurrentTimeOnScreen() {
-  unsigned long secondsSinceTimeWasLastSet = (millis() - timeThatTimeWasSetByUser) / 1000;
-  unsigned long currentTimeInSeconds = (baseHours   * 60 * 60) +
-                                       (baseMinutes * 60)      +
-                                        baseSeconds            +
-                                       secondsSinceTimeWasLastSet;
-
-  unsigned long currentHours   = (currentTimeInSeconds / 60 / 60) % 24;
-  unsigned long currentMinutes = (currentTimeInSeconds / 60)      % 60;
-  unsigned long currentSeconds = (currentTimeInSeconds)           % 60;
+  unsigned long currentTimeInSeconds = getCurrentTimeInSeconds();
+  unsigned long currentHours         = getCurrentHours(currentTimeInSeconds);
+  unsigned long currentMinutes       = getCurrentMinutes(currentTimeInSeconds);
+  unsigned long currentSeconds       = getCurrentSeconds(currentTimeInSeconds);
 
   setHoursOnScreen(currentHours);
   setMinutesOnScreen(currentMinutes);
@@ -169,56 +165,37 @@ void setCurrentTimeOnScreen() {
 void setHoursOnScreen(int hours) {
   String binaryHours = getBinaryString(hours);
 
-  // clear out row
-  for (int c = 0; c < NUMCOLS; c++) {
-    screen[0][c] = 0;
-  }
-
-  // set row to a binary representation of the hours
-  for (int c = 0; c < binaryHours.length(); c++) {
-    if (binaryHours.charAt(c) == '1') {
-      screen[0][8 - binaryHours.length() + c] = 1;
-
-    } else {
-      screen[0][8 - binaryHours.length() + c] = 0;
-    }
-  }
+  setBinaryStringOnRow(binaryHours, 0);
 }
 
 void setMinutesOnScreen(int minutes) {
   String binaryMinutes = getBinaryString(minutes);
 
-  // clear out row
-  for (int c = 0; c < NUMCOLS; c++) {
-    screen[1][c] = 0;
-  }
-
-  // set row to a binary representation of the minutes
-  for (int c = 0; c < binaryMinutes.length(); c++) {
-    if (binaryMinutes.charAt(c) == '1') {
-      screen[1][8 - binaryMinutes.length() + c] = 1;
-
-    } else {
-      screen[1][8 - binaryMinutes.length() + c] = 0;
-    }
-  }
+  setBinaryStringOnRow(binaryMinutes, 1);
 }
 
 void setSecondsOnScreen(int seconds) {
   String binarySeconds = getBinaryString(seconds);
 
+  setBinaryStringOnRow(binarySeconds, 2);
+}
+
+void setBinaryStringOnRow(String binaryString, int row) {
+  // TODO simplify this by just left-padding the string to 8 chars and
+  // displaying it with a single for loop
+
   // clear out row
   for (int c = 0; c < NUMCOLS; c++) {
-    screen[2][c] = 0;
+    screen[row][c] = 0;
   }
 
-  // set row to a binary representation of the seconds
-  for (int c = 0; c < binarySeconds.length(); c++) {
-    if (binarySeconds.charAt(c) == '1') {
-      screen[2][8 - binarySeconds.length() + c] = 1;
+  // set each "pixel" in row according to binaryString
+  for (int c = 0; c < binaryString.length(); c++) {
+    if (binaryString.charAt(c) == '1') {
+      screen[row][NUMCOLS - binaryString.length() + c] = 1;
 
     } else {
-      screen[2][8 - binarySeconds.length() + c] = 0;
+      screen[row][NUMCOLS - binaryString.length() + c] = 0;
     }
   }
 }
@@ -292,9 +269,18 @@ void handleButtonInput() {
 
   switch (currentMode) {
     case 0:
-      // if long press, switch to mode 1
+      // if long press, switch to mode 1 and set base time to current time
       if (isLongPress) {
         setMode(1);
+
+        unsigned long currentTimeInSeconds = getCurrentTimeInSeconds();
+        unsigned long currentHours         = getCurrentHours(currentTimeInSeconds);
+        unsigned long currentMinutes       = getCurrentMinutes(currentTimeInSeconds);
+        unsigned long currentSeconds       = getCurrentSeconds(currentTimeInSeconds);
+
+        baseHours   = currentHours;
+        baseMinutes = currentMinutes;
+        baseSeconds = currentSeconds;
       }
 
       break;
@@ -377,4 +363,27 @@ void setMode(int mode) {
 
 String getBinaryString(int number) {
   return String(number, BIN);
+}
+
+unsigned long getCurrentTimeInSeconds() {
+  unsigned long secondsSinceTimeWasLastSet = (millis() - timeThatTimeWasSetByUser) / 1000;
+
+  unsigned long currentTimeInSeconds = (baseHours   * 60 * 60) +
+                                       (baseMinutes * 60)      +
+                                        baseSeconds            +
+                                       secondsSinceTimeWasLastSet;
+
+  return currentTimeInSeconds;
+}
+
+unsigned long getCurrentHours(unsigned long currentTimeInSeconds) {
+  return (currentTimeInSeconds / 60 / 60) % 24;
+}
+
+unsigned long getCurrentMinutes(unsigned long currentTimeInSeconds) {
+  return (currentTimeInSeconds / 60) % 60;
+}
+
+unsigned long getCurrentSeconds(unsigned long currentTimeInSeconds) {
+  return currentTimeInSeconds % 60;
 }
