@@ -37,7 +37,9 @@ unsigned long baseHours = 0;
 unsigned long baseMinutes = 0;
 unsigned long baseSeconds = 0;
 
-/* unsigned long timeSinceTimeWasLastSet = 0; */
+// TODO consider using `unsigned long long` to fix the clock rolling over at
+// 49.7 days (since max unsigned long value is roughly 49.7 days in
+// milliseconds
 unsigned long timeThatTimeWasSetByUser = 0;
 
 // 0 = display the time as normal
@@ -162,41 +164,23 @@ void setCurrentTimeOnScreen() {
   setSecondsOnScreen(currentSeconds);
 }
 
-void setHoursOnScreen(int hours) {
-  String binaryHours = getBinaryString(hours);
-
-  setBinaryStringOnRow(binaryHours, 0);
+void setHoursOnScreen(unsigned long hours) {
+  setNumberAsBinaryOnRow(hours, 0);
 }
 
-void setMinutesOnScreen(int minutes) {
-  String binaryMinutes = getBinaryString(minutes);
-
-  setBinaryStringOnRow(binaryMinutes, 1);
+void setMinutesOnScreen(unsigned long minutes) {
+  setNumberAsBinaryOnRow(minutes, 1);
 }
 
-void setSecondsOnScreen(int seconds) {
-  String binarySeconds = getBinaryString(seconds);
-
-  setBinaryStringOnRow(binarySeconds, 2);
+void setSecondsOnScreen(unsigned long seconds) {
+  setNumberAsBinaryOnRow(seconds, 2);
 }
 
-void setBinaryStringOnRow(String binaryString, int row) {
-  // TODO simplify this by just left-padding the string to 8 chars and
-  // displaying it with a single for loop
+void setNumberAsBinaryOnRow(unsigned long number, int row) {
+  for (int c = 1; c <= NUMCOLS; c++) {
+    screen[row][NUMCOLS - c] = number % 2;
 
-  // clear out row
-  for (int c = 0; c < NUMCOLS; c++) {
-    screen[row][c] = 0;
-  }
-
-  // set each "pixel" in row according to binaryString
-  for (int c = 0; c < binaryString.length(); c++) {
-    if (binaryString.charAt(c) == '1') {
-      screen[row][NUMCOLS - binaryString.length() + c] = 1;
-
-    } else {
-      screen[row][NUMCOLS - binaryString.length() + c] = 0;
-    }
+    number >>= 1;
   }
 }
 
